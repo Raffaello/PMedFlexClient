@@ -12,4 +12,4 @@ PMedian Client for Flex
 
 Server-Side for Windows is here (C#):
 
-[https://pmed.codeplex.com/project/edit](https://pmed.codeplex.com/project/edit)
+[https://pmed.codeplex.com/project/](https://pmed.codeplex.com/project/)
