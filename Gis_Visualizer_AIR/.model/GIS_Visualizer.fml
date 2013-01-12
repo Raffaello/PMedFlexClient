@@ -1,0 +1,105 @@
+
+<model xmlns="http://ns.adobe.com/Fiber/1.0">
+  <annotation name="ActionScriptGeneration">
+    <item name="FullyQualifyReferences">true</item>
+  </annotation>
+  <entity name="GetSolutionResponse">
+    <annotation name="EntityProperties">
+      <item name="EntityOriginalName">GetSolutionResponse</item>
+    </annotation>
+    <annotation name="WSDLCollectionTypes">
+      <item name="x">http://schemas.microsoft.com/2003/10/Serialization/Arrays,ArrayOfint</item>
+      <item name="y">http://schemas.microsoft.com/2003/10/Serialization/Arrays,ArrayOfint</item>
+      <item name="WrapSolClu">http://schemas.microsoft.com/2003/10/Serialization/Arrays,ArrayOfint</item>
+    </annotation>
+    <annotation name="service Group">
+      <item name="service">PMedLibWCFService</item>
+    </annotation>
+    <annotation name="ServerProperties">
+      <item name="IncludeRemoteClass">nonempty</item>
+    </annotation>
+    <annotation name="ActionScriptGeneration">
+      <item name="Package">valueObjects</item>
+    </annotation>
+    <property name="GetSolutionResult" type="boolean"/>
+    <property name="x" type="integer[]"/>
+    <property name="y" type="integer[]"/>
+    <property name="WrapSol" type="integer"/>
+    <property name="WrapSolClu" type="integer[]"/>
+  </entity>
+  <service name="PMedLibWCFService">
+    <annotation name="ActionScriptGeneration">
+      <item name="WSDL-service">PMedLibWCFService</item>
+      <item name="ServiceType">WebService</item>
+      <item name="WSDL">http://localhost:1483/PMedLibWCFService.svc?WSDL</item>
+      <item name="Package">services.pmedlibwcfservice</item>
+      <item name="WSDL-port">BasicHttpBinding_IPMedLibWCFService</item>
+    </annotation>
+    <annotation name="ServiceTypeGroup">
+      <item name="ServiceBackendType">WebService</item>
+    </annotation>
+    <annotation name="WSDLCollectionElementTypes">
+      <item name="http://schemas.microsoft.com/2003/10/Serialization/Arrays,ArrayOfArrayOfint">ArrayOfint::http://schemas.microsoft.com/2003/10/Serialization/Arrays,ArrayOfint</item>
+      <item name="http://schemas.microsoft.com/2003/10/Serialization/Arrays,ArrayOfint">int::http://www.w3.org/2001/XMLSchema,int</item>
+      <item name="http://schemas.microsoft.com/2003/10/Serialization/Arrays,ArrayOfstring">string::http://www.w3.org/2001/XMLSchema,string</item>
+    </annotation>
+    <annotation name="ServiceConfig">
+      <item name="DEFAULT_ENTITY_PACKAGE">valueObjects</item>
+      <item name="WSDL-endpoint">http://localhost:1483/PMedLibWCFService.svc</item>
+      <item name="LINKED_FILE"></item>
+    </annotation>
+    <function name="GetListOfCapFile" return-type="string[]">
+      <annotation name="analyze group">
+        <item name="analyzed">true</item>
+      </annotation>
+      <annotation name="WSDLName">
+        <item name="SOAPAction">http://tempuri.org/IPMedLibWCFService/GetListOfCapFile</item>
+        <item name="GetListOfCapFile">http://tempuri.org/,GetListOfCapFile</item>
+      </annotation>
+      <annotation name="original signature">
+        <item name="returnType">string</item>
+      </annotation>
+    </function>
+    <function name="GetSolution" return-type="GetSolutionResponse1">
+      <annotation name="analyze group">
+        <item name="analyzed">true</item>
+      </annotation>
+      <annotation name="WSDLName">
+        <item name="SOAPAction">http://tempuri.org/IPMedLibWCFService/GetSolution</item>
+        <item name="GetSolution">http://tempuri.org/,GetSolution</item>
+      </annotation>
+      <annotation name="ValidProperties">
+        <item name="propertySpecifier">GetSolutionResult,x,y,WrapSol,WrapSolClu</item>
+      </annotation>
+      <annotation name="original signature">
+        <item name="inputParams">integer,integer,integer</item>
+        <item name="returnType">GetSolutionResponse</item>
+      </annotation>
+      <parameter name="fileindex" type="integer"/>
+      <parameter name="m" type="integer"/>
+      <parameter name="n" type="integer"/>
+    </function>
+  </service>
+  <entity name="GetSolutionResponse1">
+    <annotation name="EntityProperties">
+      <item name="EntityOriginalName">GetSolutionResponse1</item>
+    </annotation>
+    <annotation name="service Group">
+      <item name="service">PMedLibWCFService</item>
+    </annotation>
+    <annotation name="ServerProperties">
+      <item name="IncludeRemoteClass">nonempty</item>
+    </annotation>
+    <annotation name="GetSolution">
+      <item name="propertySpecifier">GetSolutionResult,x,y,WrapSol,WrapSolClu</item>
+    </annotation>
+    <annotation name="ActionScriptGeneration">
+      <item name="Package">valueObjects</item>
+    </annotation>
+    <property name="GetSolutionResult" type="boolean"/>
+    <property name="x" type="integer[]"/>
+    <property name="y" type="integer[]"/>
+    <property name="WrapSol" type="integer"/>
+    <property name="WrapSolClu" type="opaque[]"/>
+  </entity>
+</model>

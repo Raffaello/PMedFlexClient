@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+	
+
+<s:WindowedApplication xmlns:fx="http://ns.adobe.com/mxml/2009"
+					   xmlns:s="library://ns.adobe.com/flex/spark"
+					   xmlns:mx="library://ns.adobe.com/flex/mx"
+					   xmlns:pmedlibwcfservice="services.pmedlibwcfservice.*"
+					   width="252" height="309" creationComplete="init()"
+					   width.State1="332"
+					   width.ViewState="332">
+	<fx:Script>
+		<![CDATA[
+			import flash.display.*;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+			import mx.rpc.AsyncToken;
+			import mx.rpc.CallResponder;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.skins.halo.ScrollArrowSkin;
+			
+			import services.pmedlibwcfservice.PMedLibWCFService;
+			
+			import spark.components.BorderContainer;
+			import spark.components.Group;
+			import spark.components.Scroller;
+			import spark.events.IndexChangeEvent;
+			
+			import valueObjects.GetSolutionResponse1;
+			
+			var pmws:PMedLibWCFService;
+			var cr:CallResponder;
+			var _GetSolutionResult:CallResponder;
+			
+			var fileindex:int;
+			var m:int;
+			var n:int;
+			var x_coord:ArrayCollection;
+			var y_coord:ArrayCollection;
+			var WrapSol:int;
+			var WrapSolClu:ArrayCollection;
+			var ComputeResult:Boolean;
+			var SolView:Sprite;
+			var soldrawed:Boolean;
+			var scale:int;
+			var offset_x,offset_y:int;
+			const offset_x_start:int = 20;
+			const offset_y_start:int = 20;
+			var hval,vval:int;
+			
+			private function init():void
+			{
+				
+				//pmws = new PMedLibWebService();	
+				pmws = new PMedLibWCFService();
+				//pmws.useProxy=false;
+				cr = new CallResponder();
+				cr.addEventListener(FaultEvent.FAULT,FaultService);
+				cr.addEventListener(ResultEvent.RESULT,WebServiceResult);
+				
+				_GetSolutionResult = new CallResponder();
+				_GetSolutionResult.addEventListener(FaultEvent.FAULT,FaultService);
+				_GetSolutionResult.addEventListener(ResultEvent.RESULT,GetWebServiceSolutionResult);
+				RefreshList_clickHandler(null);
+				
+				soldrawed=false;
+				offset_x = offset_x_start;
+				offset_y =  offset_y_start;
+				hval=vval=0;
+				this.statusBar.visible=false;
+			}
+
+			protected function GetWebServiceSolutionResult(event:ResultEvent ):void
+			{
+				WrapSolClu = new ArrayCollection();
+				WrapSolClu.source = new Array();
+				WrapSolClu.source.push(new Array())
+				WrapSolClu.source[0].push(new Array());
+				//WrapSolClu.source[0][0] = 1;
+				
+				ComputeResult = _GetSolutionResult.lastResult.GetSolutionResult;
+				WrapSol       = _GetSolutionResult.lastResult.WrapSol;
+				WrapSolClu    = _GetSolutionResult.lastResult.WrapSolClu;
+				x_coord       = _GetSolutionResult.lastResult.x;
+				y_coord       = _GetSolutionResult.lastResult.y;
+				
+				if(ComputeResult)
+				{
+					this.TEXTAREA.text += "\r\nWrapper Solution : " + WrapSol.toString();
+					ViewButton.enabled=true;
+				}
+				else
+				{
+					this.TEXTAREA.text += "Error!!!";
+					ViewButton.enabled=false;
+				}
+			}
+												 
+			protected function FaultService(event:FaultEvent):void
+			{
+				var str:String;
+				str = event.fault.toString();
+				TEXTAREA.text=str;
+			}
+			
+			protected function WebServiceResult(event:ResultEvent):void
+			{
+				var str:ArrayCollection;
+				str = event.result as ArrayCollection;
+				this.ListsOfFiles.dataProvider = str;
+				this.TEXTAREA.text+="Done!\r\n";
+			}
+			
+			protected function Refresh(clear:Boolean):void
+			{
+				ViewButton.enabled=false;
+				this.ListsOfFiles.dataProvider=null;
+				fileindex=-1;
+				n=0;
+				m=0;
+				x_coord=y_coord=WrapSolClu=null;
+				WrapSol=0;
+				if(clear)
+					this.TEXTAREA.text="Refreshing...";
+				else 
+					this.TEXTAREA.text+="Refreshing...";
+				//this.TEXTAREA.text+="\r\n"+
+				cr.token = pmws.GetListOfCapFile();
+			}
+			
+			protected function RefreshList_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				Refresh(true);
+			}
+			
+			protected function ListsOfFiles_changeHandler(event:IndexChangeEvent):void
+			{
+				// TODO Auto-generated method stub
+				fileindex = event.newIndex;
+			}
+			
+			protected function ComputeButton_clickHandler(event:MouseEvent):void
+			{
+				if(fileindex==-1)
+				{
+					this.TEXTAREA.text += "\r\nSelect a file first!!!";
+				}
+				else
+				{
+					this.TEXTAREA.text += "\r\nWaiting For Result...";
+					m = this.CapProb.value;
+					n = this.NumSols.value;
+					_GetSolutionResult.token = pmws.GetSolution(fileindex, m, n);
+				}
+			}
+
+			protected function DrawSolution():void
+			{
+				if(soldrawed)
+				{
+					soldrawed=false;
+					DrawingPanel.removeElementAt(0);
+				}
+				
+				if(WrapSol>0)
+				{
+					var scroller:Scroller = new Scroller();
+					scroller.percentHeight=scroller.percentWidth=100;
+					var group:Group = new Group();
+					
+
+					scale = hslider1.value;
+					var shape:Shape = new Shape();
+					var line:Shape = new Shape()
+					
+					var ref:UIComponent = new UIComponent();
+					
+					line.graphics.beginFill(0);
+					//Disegno i p depositi.
+					for(var i:int = 0; i<WrapSolClu.length;i++)
+					{
+						var x:int = x_coord[WrapSolClu[i][0]]*scale + offset_x;
+						var y:int = y_coord[WrapSolClu[i][0]]*scale + offset_y;
+						
+						shape.graphics.beginFill(0xFF0000);
+						shape.graphics.drawRect(x-5,y-5,10,10);
+						ref.addChild(shape);
+						
+						shape.graphics.beginFill(0x0000FF);
+						line.graphics.lineStyle(1,0x0);
+						//Disegno gli archi e i nodi.
+						for(var j:int = 1; j<WrapSolClu[i].length; j++)
+						{
+							var _x:int = x_coord[WrapSolClu[i][j]]*scale + offset_x ;
+							var _y:int = y_coord[WrapSolClu[i][j]]*scale + offset_y ;
+								
+							
+							//disegno il nodo.
+							shape.graphics.drawCircle(_x,_y,4);
+							ref.addChild(shape);
+							
+							line.graphics.moveTo(x,y);
+							line.graphics.lineTo(_x,_y);
+							ref.addChild(line);
+						}
+					}
+					group.clipAndEnableScrolling=true;
+					group.addElement(ref);
+				
+					//group.percentHeight=group.percentWidth=100;
+					
+					
+					//DrawingPanel.addElementAt(group,0);
+					scroller.viewport=group;
+					//DrawingPanel.
+					DrawingPanel.addElementAt(scroller,0);
+					//DrawingPanel.addElementAt(ref,0);
+					
+					soldrawed=true;
+				}
+			}
+			
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				offset_x=offset_x_start;
+				offset_y=offset_y_start;
+				DrawSolution();
+			}
+			
+			protected function BackButton_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				soldrawed=false;
+				offset_x=offset_x_start;
+				offset_y=offset_y_start;
+				this.setCurrentState("State1");
+			}
+			
+			protected function hslider1_changeHandler(event:Event):void
+			{
+				// TODO Auto-generated method stub
+				DrawSolution();
+			}
+			
+			protected function hscrollbar1_changeHandler(event:Event):void
+			{
+				// TODO Auto-generated method stub
+				if(hval > hscrollbar1.value)
+				{
+					offset_x += (hscrollbar1.pageSize)*(hval-hscrollbar1.value);
+				}
+				else if (hval < hscrollbar1.value)
+				{
+					offset_x -= hscrollbar1.pageSize * (hscrollbar1.value-hval);
+					//if(offset_x<0)
+					//	offset_x=0;
+				}
+				
+				hval=hscrollbar1.value;
+				DrawSolution();
+			}
+			
+			protected function vscrollbar1_changeHandler(event:Event):void
+			{
+				// TODO Auto-generated method stub
+				if(vval > vscrollbar1.value)
+				{
+					offset_y +=vscrollbar1.pageSize * (vval-vscrollbar1.value);
+				}
+				else if (vval < vscrollbar1.value)
+				{
+					offset_y -= vscrollbar1.pageSize * (vscrollbar1.value - vval);
+					//if(offset_x<0)
+					//	offset_x=0;
+				}
+				
+				vval=vscrollbar1.value;
+				DrawSolution();
+			}
+			
+			protected function SubmitButton_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				//pmws = new PMedLibWCFService();
+				//pmws.wsdl = TEXTWSDL.text;
+				//pmws.SetWSDL(TEXTWSDL.text);
+				Security.loadPolicyFile("http://137.204.72.120/PMedLibWebService/PMedLibWebService.asmx");
+				var str:String = TEXTWSDL.text.substring(TEXTWSDL.text.length-5,TEXTWSDL.text.length);
+				str.toUpperCase();
+				
+				if (!(str == "?WSDL"))
+					TEXTWSDL.text += "?WSDL";
+				
+					this.TEXTAREA.text = "Submit : "+ TEXTWSDL.text + "\r\n";
+				pmws = new PMedLibWCFService(TEXTWSDL.text);
+			}
+		]]>
+	</fx:Script>
+	<s:states>
+		<s:State name="State1"/>
+		<s:State name="ViewState"/>
+	</s:states>
+	
+	<fx:Declarations>
+		<pmedlibwcfservice:PMedLibWCFService id="pMedLibWCFService" 
+											 fault="Alert.show(event.fault.faultString + '\n' + event.fault.faultDetail)"
+											 showBusyCursor="true" useProxy="false" />
+		<s:CallResponder id="GetSolutionResult"/>
+	</fx:Declarations>
+	
+	<s:Label id="Label1" includeIn="State1" x="10" y="75" text="Select File"/>
+	<s:DropDownList id="ListsOfFiles" includeIn="State1" x="10" y="94" width="312"
+					change="ListsOfFiles_changeHandler(event)"/>
+	<s:NumericStepper id="CapProb" includeIn="State1" x="10" y="209" maximum="20" minimum="1"/>
+	<s:Button id="RefreshList" includeIn="State1" x="254" y="65" label="Refresh"
+			  click="RefreshList_clickHandler(event)"/>
+	<s:TextArea id="TEXTAREA" includeIn="State1" x="10" y="123" width="312" height="59"
+				editable="false"/>
+	<s:Button id="ComputeButton" includeIn="State1" x="250" y="211" label="Compute"
+			  click="ComputeButton_clickHandler(event)"/>
+	<s:Label id="Label2" includeIn="State1" x="10" y="190" text="Problem"/>
+	<s:Label id="Label3" includeIn="State1" x="86" y="190" text="Solutions"/>
+	<s:NumericStepper id="NumSols" includeIn="State1" x="86" y="209" maximum="10000" minimum="1"/>
+	<s:Button id="ViewButton" includeIn="State1" x="267" y="240" width="55" label="View" click="currentState='ViewState'"/>
+	<s:Panel id="DrawingPanel" includeIn="ViewState" x="0" y="0" width="100%" height="100%">
+		<s:Button id="BackButton" includeIn="ViewState" x="10" y="-27" width="49" label="Back"
+				  click="BackButton_clickHandler(event)"/>
+		<s:Button includeIn="ViewState" x="67" y="-27" width="53" label="Draw"
+				  click="button1_clickHandler(event)"/>
+		<s:HSlider id="hslider1" x="128" y="-17" change="hslider1_changeHandler(event)" maximum="10"
+				   minimum="1" value="1"/>
+		<s:HScrollBar id="hscrollbar1" x="0" y="0" width="100%"
+					  change="hscrollbar1_changeHandler(event)"/>
+		<s:VScrollBar id="vscrollbar1" x="0" y="15" height="100%"
+					  change="vscrollbar1_changeHandler(event)"/>
+	</s:Panel>
+	<s:TextInput id="TEXTWSDL" includeIn="State1" x="10" y="35" width="312" text="http://localhost/PMedLibWCFService.svc?WSDL"/>
+	<s:Label includeIn="State1" x="10" y="15" text="Service WSDL URL"/>
+	<s:Button id="SubmitButton" includeIn="State1" x="256" y="10" label="Submit"
+			  click="SubmitButton_clickHandler(event)"/>
+	
+	
+</s:WindowedApplication>
+

@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<flexProperties aspUseIIS="true" enableServiceManager="false" flexServerFeatures="0" flexServerType="32" fmlDataModelLocation=".model/Gis_Visualizer_Mob.fml" serverContextRoot="" serverRoot="D:/Uni/GIS/Exam/ASP.NET/Flex/Gis_Visualizer_Mob" serverRootURL="http://localhost/Gis_Visualizer_Mob" toolCompile="true" useServerFlexSDK="false" version="2"/>
